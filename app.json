@@ -13,7 +13,8 @@
       "bundleIdentifier": "com.matteogiuditta.netto",
       "appleTeamId": "U38D796ZBJ",
       "infoPlist": {
-
+        "ITSAppUsesNonExemptEncryption": false,
+        "appleTeamId": "U38D796ZBJ"
       }
     },
     "plugins": [
@@ -21,7 +22,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#11151C",
           "android": {
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 76
