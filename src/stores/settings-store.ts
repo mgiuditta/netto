@@ -60,9 +60,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
 
     const next = !current;
     set({ biometricEnabled: next });
+    const raw = await AsyncStorage.getItem(STORAGE_KEY);
+    const saved = raw ? JSON.parse(raw) : {};
     await AsyncStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ biometricEnabled: next }),
+      JSON.stringify({ ...saved, biometricEnabled: next }),
     );
   },
 }));

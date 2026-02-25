@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Colors } from "@/constants/colors";
@@ -161,10 +160,7 @@ export default function QuickEntryScreen() {
   );
 }
 
-const { width } = Dimensions.get("window");
 const KEY_GAP = 10;
-const KEY_WIDTH = (width - 40 - KEY_GAP * 2) / 3;
-const CHIP_WIDTH = (width - 40 - 8 * 3) / 4;
 
 const styles = StyleSheet.create({
   container: {
@@ -214,7 +210,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    width: CHIP_WIDTH,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: Colors.surface,
@@ -238,8 +234,9 @@ const styles = StyleSheet.create({
     gap: KEY_GAP,
   },
   key: {
-    width: KEY_WIDTH,
-    height: KEY_WIDTH * 0.55,
+    flexBasis: "31%",
+    flexGrow: 1,
+    height: 56,
     borderRadius: 10,
     backgroundColor: Colors.surface,
     alignItems: "center",
