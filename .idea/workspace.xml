@@ -5,9 +5,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="db55f5fa-468d-473c-b148-e5a0ae167125" name="Changes" comment="feat: init md">
-      <change afterPath="$PROJECT_DIR$/src/components/screens/HistoryScreen.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/screens/HomeScreen.tsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/components/screens/SettingsScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bun.lock" beforeDir="false" afterPath="$PROJECT_DIR$/bun.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/_layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/index.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/screens/HistoryScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/screens/HistoryScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/screens/HomeScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/screens/HomeScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/screens/QuickEntryScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/screens/QuickEntryScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/screens/SettingsScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/screens/SettingsScreen.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,7 +70,7 @@
       <recent name="$PROJECT_DIR$/src" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.reset-project">
+  <component name="RunManager" selected="npm.ios">
     <configuration name="ios" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -86,8 +93,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.reset-project" />
         <item itemvalue="npm.ios" />
+        <item itemvalue="npm.reset-project" />
       </list>
     </recent_temporary>
   </component>
@@ -99,7 +106,7 @@
       <option name="presentableId" value="Default" />
       <updated>1772010008579</updated>
       <workItem from="1772010009622" duration="3383000" />
-      <workItem from="1772013663214" duration="2548000" />
+      <workItem from="1772013663214" duration="4593000" />
     </task>
     <task id="LOCAL-00001" summary="feat: init md">
       <option name="closed" value="true" />
@@ -125,7 +132,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772015968614</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="feat: init md">
+      <option name="closed" value="true" />
+      <created>1772016290450</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1772016290450</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
