@@ -16,6 +16,7 @@ interface TransactionState {
     note?: string,
   ) => Promise<void>;
   deleteTransaction: (id: number) => Promise<void>;
+  deleteAllTransactions: () => Promise<void>;
   loadTransactions: () => Promise<void>;
   loadStats: () => Promise<void>;
 }
@@ -46,6 +47,12 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
   deleteTransaction: async (id) => {
     await db.delete(transactions).where(eq(transactions.id, id));
+    await get().loadTransactions();
+    await get().loadStats();
+  },
+
+  deleteAllTransactions: async () => {
+    await db.delete(transactions);
     await get().loadTransactions();
     await get().loadStats();
   },
