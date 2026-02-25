@@ -5,25 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="db55f5fa-468d-473c-b148-e5a0ae167125" name="Changes" comment="feat: init md">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/expo.icon/Assets/expo-symbol 2.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/expo.icon/Assets/grid.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/expo.icon/icon.json" beforeDir="false" afterPath="$PROJECT_DIR$/assets/expo.icon/icon.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/android-icon-background.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/android-icon-foreground.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/android-icon-monochrome.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/expo-badge-white.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/expo-badge.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/expo-logo.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/favicon.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/icon.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/icon.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/logo-glow.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/react-logo.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/react-logo@2x.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/react-logo@3x.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/splash-icon.png" beforeDir="false" afterPath="$PROJECT_DIR$/assets/images/splash-icon.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/assets/images/tutorial-web.png" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/screens/HistoryScreen.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/screens/HomeScreen.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/components/screens/SettingsScreen.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,6 +59,9 @@
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/images" />
     </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
   </component>
   <component name="RunManager" selected="npm.reset-project">
     <configuration name="ios" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
@@ -112,7 +99,7 @@
       <option name="presentableId" value="Default" />
       <updated>1772010008579</updated>
       <workItem from="1772010009622" duration="3383000" />
-      <workItem from="1772013663214" duration="2244000" />
+      <workItem from="1772013663214" duration="2548000" />
     </task>
     <task id="LOCAL-00001" summary="feat: init md">
       <option name="closed" value="true" />
@@ -130,7 +117,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772014508341</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="feat: init md">
+      <option name="closed" value="true" />
+      <created>1772015968614</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1772015968614</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
