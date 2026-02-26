@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="db55f5fa-468d-473c-b148-e5a0ae167125" name="Changes" comment="feat: init md" />
+    <list default="true" id="db55f5fa-468d-473c-b148-e5a0ae167125" name="Changes" comment="feat: init md">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(tabs)/history/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(tabs)/history/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/screens/SettingsScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/screens/SettingsScreen.tsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -96,6 +100,10 @@
       <updated>1772010008579</updated>
       <workItem from="1772010009622" duration="3383000" />
       <workItem from="1772013663214" duration="7979000" />
+      <workItem from="1772022072115" duration="2454000" />
+      <workItem from="1772036512493" duration="659000" />
+      <workItem from="1772045789785" duration="284000" />
+      <workItem from="1772125509084" duration="338000" />
     </task>
     <task id="LOCAL-00001" summary="feat: init md">
       <option name="closed" value="true" />
@@ -145,7 +153,23 @@
       <option name="project" value="LOCAL" />
       <updated>1772021584485</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="feat: init md">
+      <option name="closed" value="true" />
+      <created>1772023392850</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1772023392850</updated>
+    </task>
+    <task id="LOCAL-00008" summary="feat: init md">
+      <option name="closed" value="true" />
+      <created>1772024467243</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1772024467243</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

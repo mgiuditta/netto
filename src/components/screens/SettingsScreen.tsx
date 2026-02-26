@@ -29,20 +29,24 @@ export default function SettingsScreen() {
   const biometricEnabled = useSettingsStore((s) => s.biometricEnabled);
   const toggleBiometric = useSettingsStore((s) => s.toggleBiometric);
 
-  const lossByCategory = useMemo(() => {
-    const map: Record<string, number> = {};
+  const statsByCategory = useMemo(() => {
+    const wins: Record<string, number> = {};
+    const losses: Record<string, number> = {};
     for (const tx of transactions) {
-      if (tx.type === "loss") {
-        map[tx.category] = (map[tx.category] || 0) + tx.amount;
+      if (tx.type === "win") {
+        wins[tx.category] = (wins[tx.category] || 0) + tx.amount;
+      } else {
+        losses[tx.category] = (losses[tx.category] || 0) + tx.amount;
       }
     }
-    const total = Object.values(map).reduce((a, b) => a + b, 0);
-    return { map, total };
+    const categories = [...new Set([...Object.keys(wins), ...Object.keys(losses)])];
+    return categories.map((cat) => {
+      const win = wins[cat] || 0;
+      const loss = losses[cat] || 0;
+      const total = win + loss;
+      return { cat, win, loss, total, winPct: total > 0 ? (win / total) * 100 : 0, lossPct: total > 0 ? (loss / total) * 100 : 0 };
+    });
   }, [transactions]);
-
-  const handleTipJar = () => {
-    Linking.openURL("https://buymeacoffee.com/netto");
-  };
 
   const handleDeleteAll = () => {
     Alert.alert(
@@ -86,33 +90,31 @@ export default function SettingsScreen() {
       contentInsetAdjustmentBehavior="automatic"
       automaticallyAdjustContentInsets
     >
-      {/* Perdite per categoria */}
-      <Text style={styles.sectionTitle}>Perdite per categoria</Text>
+      {/* Per categoria */}
+      <Text style={styles.sectionTitle}>Per categoria</Text>
       <View style={styles.card}>
-        {lossByCategory.total === 0 ? (
-          <Text style={styles.emptyText}>Nessuna perdita registrata.</Text>
+        {statsByCategory.length === 0 ? (
+          <Text style={styles.emptyText}>Nessuna transazione registrata.</Text>
         ) : (
-          Object.entries(lossByCategory.map).map(([cat, amount]) => {
-            const pct = (amount / lossByCategory.total) * 100;
-            return (
-              <View key={cat} style={styles.categoryRow}>
-                <View style={styles.categoryHeader}>
-                  <Text style={styles.categoryLabel}>
-                    {CATEGORY_LABELS[cat as TransactionCategory] ?? cat}
-                  </Text>
-                  <Text style={styles.categoryPct}>{pct.toFixed(0)}%</Text>
-                </View>
-                <View style={styles.barTrack}>
-                  <View
-                    style={[styles.barFill, { width: `${pct}%` }]}
-                  />
-                </View>
-                <Text style={styles.categoryAmount}>
-                  {(amount / 100).toFixed(2)} €
+          statsByCategory.map(({ cat, win, loss, winPct, lossPct }) => (
+            <View key={cat} style={styles.categoryRow}>
+              <Text style={styles.categoryLabel}>
+                {CATEGORY_LABELS[cat as TransactionCategory] ?? cat}
+              </Text>
+              <View style={styles.barTrack}>
+                <View style={[styles.barFillWin, { width: `${winPct}%` }]} />
+                <View style={[styles.barFillLoss, { width: `${lossPct}%` }]} />
+              </View>
+              <View style={styles.categoryAmounts}>
+                <Text style={[styles.categoryAmount, { color: Colors.win }]}>
+                  +{(win / 100).toFixed(2)} €
+                </Text>
+                <Text style={[styles.categoryAmount, { color: Colors.loss }]}>
+                  −{(loss / 100).toFixed(2)} €
                 </Text>
               </View>
-            );
-          })
+            </View>
+          ))
         )}
       </View>
 
@@ -135,17 +137,6 @@ export default function SettingsScreen() {
       <View style={styles.card}>
         <Pressable style={styles.button} onPress={handleExportCSV}>
           <Text style={styles.buttonText}>Esporta CSV</Text>
-        </Pressable>
-      </View>
-
-      {/* Tip Jar */}
-      <Text style={styles.sectionTitle}>Supporta Netto</Text>
-      <View style={styles.card}>
-        <Text style={styles.tipMessage}>
-          Netto è gratuita e senza pubblicità. Se ti è utile, offrici un caffè.
-        </Text>
-        <Pressable style={styles.tipButton} onPress={handleTipJar}>
-          <Text style={styles.tipButtonText}>Dona un caffè ☕</Text>
         </Pressable>
       </View>
 
@@ -220,37 +211,38 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   categoryRow: {
-    marginBottom: 14,
-  },
-  categoryHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 6,
+    marginBottom: 16,
   },
   categoryLabel: {
     color: Colors.text,
     fontSize: 15,
     fontWeight: "500",
-  },
-  categoryPct: {
-    color: Colors.textSecondary,
-    fontSize: 14,
+    marginBottom: 6,
   },
   barTrack: {
-    height: 6,
-    borderRadius: 3,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: Colors.background,
     overflow: "hidden",
-    marginBottom: 4,
+    flexDirection: "row",
+    marginBottom: 6,
   },
-  barFill: {
-    height: 6,
-    borderRadius: 3,
+  barFillWin: {
+    height: 8,
+    backgroundColor: Colors.win,
+  },
+  barFillLoss: {
+    height: 8,
     backgroundColor: Colors.loss,
   },
+  categoryAmounts: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
   categoryAmount: {
-    color: Colors.textSecondary,
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: "600",
+    fontVariant: ["tabular-nums"],
   },
   switchRow: {
     flexDirection: "row",
@@ -299,23 +291,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: 12,
     marginTop: 2,
-  },
-  tipMessage: {
-    color: Colors.textSecondary,
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 14,
-  },
-  tipButton: {
-    backgroundColor: Colors.primary,
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  tipButtonText: {
-    color: Colors.text,
-    fontSize: 16,
-    fontWeight: "600",
   },
   dangerTitle: {
     color: Colors.loss,
