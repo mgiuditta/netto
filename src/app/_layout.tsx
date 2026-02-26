@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import * as LocalAuthentication from "expo-local-authentication";
 import { Colors } from "@/constants/colors";
 import { initDatabase } from "@/db";
 import { useTransactionStore } from "@/stores/transaction-store";
 import { useSettingsStore } from "@/stores/settings-store";
 import OnboardingScreen from "@/components/screens/OnboardingScreen";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
@@ -42,6 +45,14 @@ export default function RootLayout() {
       if (result.success) setAuthenticated(true);
     });
   }, [dbReady, settingsLoaded, biometricEnabled, onboardingCompleted]);
+
+  const appReady = dbReady && (authenticated || !onboardingCompleted);
+
+  useEffect(() => {
+    if (appReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [appReady]);
 
   if (!dbReady) return null;
 
