@@ -20,6 +20,8 @@ const CATEGORIES: { key: TransactionCategory; label: string }[] = [
   { key: "poker", label: "Poker" },
 ];
 
+const MAX_EURO_DIGITS = 6;
+const MAX_CENT_DIGITS = 2;
 const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", ",", "0", "⌫"];
 
 function formatAmount(euroDigits: string, centDigits: string, hasCents: boolean): string {
@@ -61,9 +63,9 @@ export default function QuickEntryScreen() {
       if (!hasCents) setHasCents(true);
     } else {
       if (hasCents) {
-        setCentDigits((d) => (d.length < 2 ? d + key : d));
+        setCentDigits((d) => (d.length < MAX_CENT_DIGITS ? d + key : d));
       } else {
-        setEuroDigits((d) => (d.length < 6 ? d + key : d));
+        setEuroDigits((d) => (d.length < MAX_EURO_DIGITS ? d + key : d));
       }
     }
   };

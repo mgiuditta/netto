@@ -4,6 +4,21 @@ import * as LocalAuthentication from "expo-local-authentication";
 
 const STORAGE_KEY = "netto_settings";
 
+interface PersistedSettings {
+  biometricEnabled?: boolean;
+  onboardingCompleted?: boolean;
+}
+
+function parseSettings(raw: string): PersistedSettings {
+  const parsed: unknown = JSON.parse(raw);
+  if (typeof parsed !== "object" || parsed === null) return {};
+  const obj = parsed as Record<string, unknown>;
+  return {
+    biometricEnabled: typeof obj.biometricEnabled === "boolean" ? obj.biometricEnabled : undefined,
+    onboardingCompleted: typeof obj.onboardingCompleted === "boolean" ? obj.onboardingCompleted : undefined,
+  };
+}
+
 interface SettingsState {
   biometricEnabled: boolean;
   onboardingCompleted: boolean;
@@ -21,10 +36,10 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   loadSettings: async () => {
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw);
+      const settings = parseSettings(raw);
       set({
-        biometricEnabled: parsed.biometricEnabled ?? false,
-        onboardingCompleted: parsed.onboardingCompleted ?? false,
+        biometricEnabled: settings.biometricEnabled ?? false,
+        onboardingCompleted: settings.onboardingCompleted ?? false,
         loaded: true,
       });
     } else {
@@ -35,7 +50,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   completeOnboarding: async () => {
     set({ onboardingCompleted: true });
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    const current = raw ? JSON.parse(raw) : {};
+    const current = raw ? parseSettings(raw) : {};
     await AsyncStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ ...current, onboardingCompleted: true }),
@@ -61,7 +76,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     const next = !current;
     set({ biometricEnabled: next });
     const raw = await AsyncStorage.getItem(STORAGE_KEY);
-    const saved = raw ? JSON.parse(raw) : {};
+    const saved = raw ? parseSettings(raw) : {};
     await AsyncStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ ...saved, biometricEnabled: next }),

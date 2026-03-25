@@ -1,7 +1,11 @@
-import { useEffect, useRef, useCallback } from "react";
-import { Text, StyleSheet, Animated } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Text, StyleSheet } from "react-native";
+import { EaseView } from "react-native-ease";
 import { create } from "zustand";
 import { Colors } from "@/constants/colors";
+
+const TOAST_DURATION_MS = 2000;
+const TOAST_SLIDE_OFFSET = -20;
 
 type ToastType = "success" | "error" | "info";
 
@@ -29,45 +33,43 @@ export function ToastOverlay() {
   const type = useToastStore((s) => s.type);
   const clear = useToastStore((s) => s.clear);
 
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(-20)).current;
+  const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const hide = useCallback(() => {
-    Animated.parallel([
-      Animated.timing(opacity, { toValue: 0, duration: 200, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: -20, duration: 200, useNativeDriver: true }),
-    ]).start(() => clear());
-  }, [opacity, translateY, clear]);
-
   useEffect(() => {
-    if (!text) return;
+    if (text) {
+      setMounted(true);
+      setVisible(true);
 
-    opacity.setValue(0);
-    translateY.setValue(-20);
-    Animated.parallel([
-      Animated.timing(opacity, { toValue: 1, duration: 250, useNativeDriver: true }),
-      Animated.timing(translateY, { toValue: 0, duration: 250, useNativeDriver: true }),
-    ]).start();
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => setVisible(false), TOAST_DURATION_MS);
 
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(hide, 2000);
+      return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    }
+  }, [text]);
 
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [text, opacity, translateY, hide]);
-
-  if (!text) return null;
+  if (!mounted || !text) return null;
 
   const bgColor =
     type === "error" ? Colors.loss : type === "info" ? Colors.textSecondary : Colors.primary;
 
   return (
-    <Animated.View
-      style={[styles.toast, { backgroundColor: bgColor, opacity, transform: [{ translateY }] }]}
+    <EaseView
+      style={[styles.toast, { backgroundColor: bgColor }]}
       pointerEvents="none"
+      initialAnimate={{ opacity: 0, translateY: TOAST_SLIDE_OFFSET }}
+      animate={{ opacity: visible ? 1 : 0, translateY: visible ? 0 : TOAST_SLIDE_OFFSET }}
+      transition={{ type: "timing", duration: visible ? 250 : 200 }}
+      onTransitionEnd={({ finished }) => {
+        if (finished && !visible) {
+          setMounted(false);
+          clear();
+        }
+      }}
     >
       <Text style={styles.text}>{text}</Text>
-    </Animated.View>
+    </EaseView>
   );
 }
 

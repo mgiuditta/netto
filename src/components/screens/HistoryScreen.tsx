@@ -3,16 +3,11 @@ import { useMemo, useState } from "react";
 import * as Haptics from "expo-haptics";
 import { Host, Menu, Button as SwiftButton } from "@expo/ui/swift-ui";
 import { Colors } from "@/constants/colors";
+import { CATEGORY_LABELS } from "@/constants/categories";
+import { formatCents } from "@/utils/format";
 import { useTransactionStore } from "@/stores/transaction-store";
 import { useToast } from "@/components/Toast";
 import type { Transaction, TransactionCategory, TransactionType } from "@/db";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  slot: "Slot",
-  scommesse: "Scommesse",
-  poker: "Poker",
-  gratta_e_vinci: "Gratta e Vinci",
-};
 
 const TYPE_OPTIONS: { key: TransactionType | "all"; label: string }[] = [
   { key: "all", label: "Tutto" },
@@ -34,10 +29,6 @@ function formatDate(ts: number): string {
     month: "long",
     year: "numeric",
   });
-}
-
-function formatAmount(cents: number): string {
-  return (cents / 100).toFixed(2).replace(".", ",");
 }
 
 function dateKey(ts: number): string {
@@ -66,10 +57,12 @@ export default function HistoryScreen() {
     const grouped = new Map<string, { title: string; data: Transaction[] }>();
     for (const tx of filtered) {
       const key = dateKey(tx.createdAt);
-      if (!grouped.has(key)) {
-        grouped.set(key, { title: formatDate(tx.createdAt), data: [] });
+      const existing = grouped.get(key);
+      if (existing) {
+        existing.data.push(tx);
+      } else {
+        grouped.set(key, { title: formatDate(tx.createdAt), data: [tx] });
       }
-      grouped.get(key)!.data.push(tx);
     }
     return Array.from(grouped.values());
   }, [filtered]);
@@ -89,8 +82,8 @@ export default function HistoryScreen() {
     ]);
   };
 
-  const typeLabel = TYPE_OPTIONS.find((o) => o.key === typeFilter)!.label;
-  const categoryLabel = CATEGORY_OPTIONS.find((o) => o.key === categoryFilter)!.label;
+  const typeLabel = TYPE_OPTIONS.find((o) => o.key === typeFilter)?.label ?? "Tutto";
+  const categoryLabel = CATEGORY_OPTIONS.find((o) => o.key === categoryFilter)?.label ?? "Tutte";
 
   if (!isLoaded) {
     return (
@@ -174,7 +167,7 @@ export default function HistoryScreen() {
                 { color: item.type === "win" ? Colors.win : Colors.loss },
               ]}
             >
-              {item.type === "win" ? "+" : "−"}€{formatAmount(item.amount)}
+              {item.type === "win" ? "+" : "−"}€{formatCents(item.amount)}
             </Text>
           </View>
         </TouchableOpacity>

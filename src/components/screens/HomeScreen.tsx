@@ -3,20 +3,10 @@ import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Activ
 import { useRouter } from "expo-router";
 import { LineChart, BarChart, PieChart } from "react-native-gifted-charts";
 import { Colors } from "@/constants/colors";
+import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/constants/categories";
+import { formatCents } from "@/utils/format";
 import { useTransactionStore } from "@/stores/transaction-store";
-import type { Transaction } from "@/db";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  slot: "Slot",
-  scommesse: "Scommesse",
-  poker: "Poker",
-  gratta_e_vinci: "Gratta e Vinci",
-};
-
-function formatAmount(cents: number): string {
-  const abs = Math.abs(cents);
-  return (abs / 100).toFixed(2).replace(".", ",");
-}
+import type { Transaction, TransactionCategory } from "@/db";
 
 const CHART_WIDTH = Dimensions.get("window").width - 72;
 
@@ -32,20 +22,15 @@ function buildChartData(transactions: Transaction[]) {
   });
 }
 
+const MONTHS_TO_SHOW = 6;
 const MONTH_NAMES = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
 
-const CATEGORY_COLORS: Record<string, string> = {
-  slot: "#008F9C",
-  scommesse: "#B04A4A",
-  poker: "#C78D3C",
-  gratta_e_vinci: "#6A5ACD",
-};
 
 function buildMonthlyBars(transactions: Transaction[]) {
   const now = new Date();
   const months: { key: string; label: string; wins: number; losses: number }[] = [];
 
-  for (let i = 5; i >= 0; i--) {
+  for (let i = MONTHS_TO_SHOW - 1; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${d.getMonth()}`;
     months.push({ key, label: MONTH_NAMES[d.getMonth()], wins: 0, losses: 0 });
@@ -69,22 +54,22 @@ function buildMonthlyBars(transactions: Transaction[]) {
 }
 
 function buildCategoryPie(transactions: Transaction[]) {
-  const totals: Record<string, number> = {};
+  const totals = new Map<TransactionCategory, number>();
   for (const tx of transactions) {
     if (tx.type === "loss") {
-      totals[tx.category] = (totals[tx.category] || 0) + tx.amount;
+      totals.set(tx.category, (totals.get(tx.category) ?? 0) + tx.amount);
     }
   }
 
-  const entries = Object.entries(totals).filter(([, v]) => v > 0);
-  if (entries.length === 0) return [];
+  if (totals.size === 0) return [];
 
-  return entries
+  return [...totals.entries()]
+    .filter(([, v]) => v > 0)
     .sort((a, b) => b[1] - a[1])
     .map(([cat, cents]) => ({
       value: cents / 100,
-      color: CATEGORY_COLORS[cat] || Colors.textSecondary,
-      text: CATEGORY_LABELS[cat] || cat,
+      color: CATEGORY_COLORS[cat],
+      text: CATEGORY_LABELS[cat],
     }));
 }
 
@@ -138,7 +123,7 @@ export default function HomeScreen() {
       {/* Saldo Netto */}
       <Text style={styles.label}>Saldo Netto</Text>
       <Text style={[styles.balance, { color: balanceColor }]}>
-        {balanceSign}€{formatAmount(netBalance)}
+        {balanceSign}€{formatCents(netBalance)}
       </Text>
 
       {/* Grafico andamento cumulativo */}
@@ -195,13 +180,13 @@ export default function HomeScreen() {
           <View style={styles.cardCol}>
             <Text style={styles.cardLabel}>Vinto</Text>
             <Text style={[styles.cardValue, { color: Colors.win }]}>
-              +€{formatAmount(monthWins)}
+              +€{formatCents(monthWins)}
             </Text>
           </View>
           <View style={styles.cardCol}>
             <Text style={styles.cardLabel}>Perso</Text>
             <Text style={[styles.cardValue, { color: Colors.loss }]}>
-              −€{formatAmount(monthLosses)}
+              −€{formatCents(monthLosses)}
             </Text>
           </View>
         </View>
@@ -288,7 +273,7 @@ export default function HomeScreen() {
                   { color: tx.type === "win" ? Colors.win : Colors.loss },
                 ]}
               >
-                {tx.type === "win" ? "+" : "−"}€{formatAmount(tx.amount)}
+                {tx.type === "win" ? "+" : "−"}€{formatCents(tx.amount)}
               </Text>
             </View>
           ))}

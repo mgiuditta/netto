@@ -14,17 +14,20 @@ import * as Sharing from "expo-sharing";
 import * as DocumentPicker from "expo-document-picker";
 import * as Haptics from "expo-haptics";
 import { Colors } from "@/constants/colors";
+import { CATEGORY_LABELS } from "@/constants/categories";
+import { formatCents } from "@/utils/format";
 import { useTransactionStore } from "@/stores/transaction-store";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useToast } from "@/components/Toast";
 import type { TransactionCategory, TransactionType } from "@/db";
 
-const CATEGORY_LABELS: Record<TransactionCategory, string> = {
-  slot: "Slot",
-  scommesse: "Scommesse",
-  poker: "Poker",
-  gratta_e_vinci: "Gratta e Vinci",
-};
+function isTransactionType(value: string): value is TransactionType {
+  return value === "win" || value === "loss";
+}
+
+function isTransactionCategory(value: string): value is TransactionCategory {
+  return ["slot", "scommesse", "poker", "gratta_e_vinci"].includes(value);
+}
 
 export default function SettingsScreen() {
   const transactions = useTransactionStore((s) => s.transactions);
@@ -35,21 +38,28 @@ export default function SettingsScreen() {
   const toast = useToast();
 
   const statsByCategory = useMemo(() => {
-    const wins: Record<string, number> = {};
-    const losses: Record<string, number> = {};
+    const wins = new Map<TransactionCategory, number>();
+    const losses = new Map<TransactionCategory, number>();
     for (const tx of transactions) {
       if (tx.type === "win") {
-        wins[tx.category] = (wins[tx.category] || 0) + tx.amount;
+        wins.set(tx.category, (wins.get(tx.category) ?? 0) + tx.amount);
       } else {
-        losses[tx.category] = (losses[tx.category] || 0) + tx.amount;
+        losses.set(tx.category, (losses.get(tx.category) ?? 0) + tx.amount);
       }
     }
-    const categories = [...new Set([...Object.keys(wins), ...Object.keys(losses)])];
-    return categories.map((cat) => {
-      const win = wins[cat] || 0;
-      const loss = losses[cat] || 0;
+    const categories = new Set<TransactionCategory>([...wins.keys(), ...losses.keys()]);
+    return [...categories].map((cat) => {
+      const win = wins.get(cat) ?? 0;
+      const loss = losses.get(cat) ?? 0;
       const total = win + loss;
-      return { cat, win, loss, total, winPct: total > 0 ? (win / total) * 100 : 0, lossPct: total > 0 ? (loss / total) * 100 : 0 };
+      return {
+        cat,
+        win,
+        loss,
+        total,
+        winPct: total > 0 ? (win / total) * 100 : 0,
+        lossPct: total > 0 ? (loss / total) * 100 : 0,
+      };
     });
   }, [transactions]);
 
@@ -93,9 +103,6 @@ export default function SettingsScreen() {
     toast.show("CSV esportato");
   };
 
-  const VALID_TYPES = new Set(["win", "loss"]);
-  const VALID_CATEGORIES = new Set(["slot", "scommesse", "poker", "gratta_e_vinci"]);
-
   const handleImportCSV = async () => {
     const result = await DocumentPicker.getDocumentAsync({
       type: "text/csv",
@@ -119,7 +126,7 @@ export default function SettingsScreen() {
       if (!match) continue;
 
       const [, , importoStr, type, category, note, dateStr] = match;
-      if (!VALID_TYPES.has(type) || !VALID_CATEGORIES.has(category)) continue;
+      if (!isTransactionType(type) || !isTransactionCategory(category)) continue;
 
       const amountCents = Math.round(parseFloat(importoStr) * 100);
       const createdAt = new Date(dateStr).getTime();
@@ -128,8 +135,8 @@ export default function SettingsScreen() {
 
       rows.push({
         amount: amountCents,
-        type: type as TransactionType,
-        category: category as TransactionCategory,
+        type,
+        category,
         note: note || null,
         createdAt,
       });
@@ -174,7 +181,7 @@ export default function SettingsScreen() {
           statsByCategory.map(({ cat, win, loss, winPct, lossPct }) => (
             <View key={cat} style={styles.categoryRow}>
               <Text style={styles.categoryLabel}>
-                {CATEGORY_LABELS[cat as TransactionCategory] ?? cat}
+                {CATEGORY_LABELS[cat]}
               </Text>
               <View style={styles.barTrack}>
                 <View style={[styles.barFillWin, { width: `${winPct}%` }]} />
@@ -182,10 +189,10 @@ export default function SettingsScreen() {
               </View>
               <View style={styles.categoryAmounts}>
                 <Text style={[styles.categoryAmount, { color: Colors.win }]}>
-                  +{(win / 100).toFixed(2)} €
+                  +{formatCents(win)} €
                 </Text>
                 <Text style={[styles.categoryAmount, { color: Colors.loss }]}>
-                  −{(loss / 100).toFixed(2)} €
+                  −{formatCents(loss)} €
                 </Text>
               </View>
             </View>
