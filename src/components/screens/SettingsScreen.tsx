@@ -11,10 +11,13 @@ import {
 } from "react-native";
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
+import * as DocumentPicker from "expo-document-picker";
+import * as Haptics from "expo-haptics";
 import { Colors } from "@/constants/colors";
 import { useTransactionStore } from "@/stores/transaction-store";
 import { useSettingsStore } from "@/stores/settings-store";
-import type { TransactionCategory } from "@/db";
+import { useToast } from "@/components/Toast";
+import type { TransactionCategory, TransactionType } from "@/db";
 
 const CATEGORY_LABELS: Record<TransactionCategory, string> = {
   slot: "Slot",
@@ -26,8 +29,10 @@ const CATEGORY_LABELS: Record<TransactionCategory, string> = {
 export default function SettingsScreen() {
   const transactions = useTransactionStore((s) => s.transactions);
   const deleteAllTransactions = useTransactionStore((s) => s.deleteAllTransactions);
+  const importTransactions = useTransactionStore((s) => s.importTransactions);
   const biometricEnabled = useSettingsStore((s) => s.biometricEnabled);
   const toggleBiometric = useSettingsStore((s) => s.toggleBiometric);
+  const toast = useToast();
 
   const statsByCategory = useMemo(() => {
     const wins: Record<string, number> = {};
@@ -57,7 +62,11 @@ export default function SettingsScreen() {
         {
           text: "Cancella tutto",
           style: "destructive",
-          onPress: deleteAllTransactions,
+          onPress: async () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            await deleteAllTransactions();
+            toast.show("Tutti i dati cancellati");
+          },
         },
       ],
     );
@@ -81,6 +90,72 @@ export default function SettingsScreen() {
     const file = new File(Paths.cache, "netto_export.csv");
     file.write(csv);
     await Sharing.shareAsync(file.uri, { mimeType: "text/csv" });
+    toast.show("CSV esportato");
+  };
+
+  const VALID_TYPES = new Set(["win", "loss"]);
+  const VALID_CATEGORIES = new Set(["slot", "scommesse", "poker", "gratta_e_vinci"]);
+
+  const handleImportCSV = async () => {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: "text/csv",
+      copyToCacheDirectory: true,
+    });
+
+    if (result.canceled) return;
+
+    const file = new File(result.assets[0].uri);
+    const content = await file.text();
+    const lines = content.split("\n").filter((l: string) => l.trim().length > 0);
+
+    if (lines.length < 2) {
+      Alert.alert("File non valido", "Il file CSV non contiene transazioni.");
+      return;
+    }
+
+    const rows: { amount: number; type: TransactionType; category: TransactionCategory; note: string | null; createdAt: number }[] = [];
+    for (let i = 1; i < lines.length; i++) {
+      const match = lines[i].match(/^(\d+),([\d.]+),(win|loss),([\w]+),"(.*)",([\w\-:.TZ]+)$/);
+      if (!match) continue;
+
+      const [, , importoStr, type, category, note, dateStr] = match;
+      if (!VALID_TYPES.has(type) || !VALID_CATEGORIES.has(category)) continue;
+
+      const amountCents = Math.round(parseFloat(importoStr) * 100);
+      const createdAt = new Date(dateStr).getTime();
+
+      if (isNaN(amountCents) || amountCents <= 0 || isNaN(createdAt)) continue;
+
+      rows.push({
+        amount: amountCents,
+        type: type as TransactionType,
+        category: category as TransactionCategory,
+        note: note || null,
+        createdAt,
+      });
+    }
+
+    if (rows.length === 0) {
+      Alert.alert("File non valido", "Nessuna transazione valida trovata nel file.");
+      return;
+    }
+
+    Alert.alert(
+      "Importa backup",
+      `Verranno importate ${rows.length} transazioni.\n\nAttenzione: tutti i dati attualmente presenti verranno eliminati e sostituiti con quelli del file.`,
+      [
+        { text: "Annulla", style: "cancel" },
+        {
+          text: "Importa",
+          style: "destructive",
+          onPress: async () => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            await importTransactions(rows);
+            toast.show(`${rows.length} transazioni importate`);
+          },
+        },
+      ],
+    );
   };
 
   return (
@@ -137,6 +212,9 @@ export default function SettingsScreen() {
       <View style={styles.card}>
         <Pressable style={styles.button} onPress={handleExportCSV}>
           <Text style={styles.buttonText}>Esporta CSV</Text>
+        </Pressable>
+        <Pressable style={[styles.button, styles.buttonOutline]} onPress={handleImportCSV}>
+          <Text style={[styles.buttonText, styles.buttonOutlineText]}>Importa CSV</Text>
         </Pressable>
       </View>
 
@@ -263,6 +341,15 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontSize: 16,
     fontWeight: "600",
+  },
+  buttonOutline: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    marginTop: 10,
+  },
+  buttonOutlineText: {
+    color: Colors.primary,
   },
   safeCard: {
     backgroundColor: Colors.surface,

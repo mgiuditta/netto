@@ -7,8 +7,10 @@ import {
   FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import { Colors } from "@/constants/colors";
 import { useTransactionStore } from "@/stores/transaction-store";
+import { useToast } from "@/components/Toast";
 import type { TransactionType, TransactionCategory } from "@/db";
 
 const CATEGORIES: { key: TransactionCategory; label: string }[] = [
@@ -34,6 +36,7 @@ function toCents(euroDigits: string, centDigits: string): number {
 
 export default function QuickEntryScreen() {
   const router = useRouter();
+  const toast = useToast();
   const addTransaction = useTransactionStore((s) => s.addTransaction);
 
   const [type, setType] = useState<TransactionType>("loss");
@@ -43,6 +46,7 @@ export default function QuickEntryScreen() {
   const [category, setCategory] = useState<TransactionCategory>("gratta_e_vinci");
 
   const handleKey = (key: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (key === "⌫") {
       if (hasCents) {
         if (centDigits.length > 0) {
@@ -68,7 +72,9 @@ export default function QuickEntryScreen() {
 
   const handleConfirm = async () => {
     if (amountCents === 0) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     await addTransaction(amountCents, type, category);
+    toast.show(type === "win" ? "Guadagno registrato" : "Spesa registrata");
     router.back();
   };
 
@@ -78,7 +84,7 @@ export default function QuickEntryScreen() {
       <View style={styles.toggle}>
         <TouchableOpacity
           style={[styles.toggleBtn, type === "win" && styles.toggleWinActive]}
-          onPress={() => setType("win")}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setType("win"); }}
         >
           <Text
             style={[
@@ -91,7 +97,7 @@ export default function QuickEntryScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.toggleBtn, type === "loss" && styles.toggleLossActive]}
-          onPress={() => setType("loss")}
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); setType("loss"); }}
         >
           <Text
             style={[
@@ -120,7 +126,7 @@ export default function QuickEntryScreen() {
         renderItem={({ item: c }) => (
           <TouchableOpacity
             style={[styles.chip, category === c.key && styles.chipActive]}
-            onPress={() => setCategory(c.key)}
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setCategory(c.key); }}
           >
             <Text
               style={[

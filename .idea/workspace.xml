@@ -5,9 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="db55f5fa-468d-473c-b148-e5a0ae167125" name="Changes" comment="feat: init md">
+      <change afterPath="$PROJECT_DIR$/istructions/clean_code.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/istructions/expo-react-native-typescript-cursor-rules.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/istructions/typescript.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(tabs)/history/index.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(tabs)/history/index.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bun.lock" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/_layout.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/_layout.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/screens/HistoryScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/screens/HistoryScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/screens/HomeScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/screens/HomeScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/screens/QuickEntryScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/screens/QuickEntryScreen.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/screens/SettingsScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/screens/SettingsScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/stores/transaction-store.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/stores/transaction-store.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,8 +29,20 @@
       <entry key="_/Users/matteo/dev/netto" value="3A9g4T8t4wYiIFwZGg42YwWgTkq" />
     </persistenceIdMap>
   </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="edit-panel" value="GPT-5 mini" />
+    </selectedModels>
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="19072" />
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
@@ -28,11 +50,14 @@
   <component name="ProjectId" id="3A9g4T8t4wYiIFwZGg42YwWgTkq" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="false" />
     <option name="showLibraryContents" value="true" />
+    <option name="showScratchesAndConsoles" value="false" />
   </component>
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
@@ -103,7 +128,9 @@
       <workItem from="1772022072115" duration="2454000" />
       <workItem from="1772036512493" duration="659000" />
       <workItem from="1772045789785" duration="284000" />
-      <workItem from="1772125509084" duration="338000" />
+      <workItem from="1772125509084" duration="1337000" />
+      <workItem from="1772389272458" duration="111000" />
+      <workItem from="1774429878336" duration="3042000" />
     </task>
     <task id="LOCAL-00001" summary="feat: init md">
       <option name="closed" value="true" />
@@ -169,7 +196,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772024467243</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="feat: init md">
+      <option name="closed" value="true" />
+      <created>1772125874297</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1772125874297</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

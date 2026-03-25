@@ -2,6 +2,14 @@ import { create } from "zustand";
 import { desc, eq, and, gte, sql } from "drizzle-orm";
 import { db, transactions, type Transaction, type TransactionType, type TransactionCategory } from "@/db";
 
+interface ImportRow {
+  amount: number;
+  type: TransactionType;
+  category: TransactionCategory;
+  note: string | null;
+  createdAt: number;
+}
+
 interface TransactionState {
   transactions: Transaction[];
   netBalance: number;
@@ -17,6 +25,7 @@ interface TransactionState {
   ) => Promise<void>;
   deleteTransaction: (id: number) => Promise<void>;
   deleteAllTransactions: () => Promise<void>;
+  importTransactions: (rows: ImportRow[]) => Promise<void>;
   loadTransactions: () => Promise<void>;
   loadStats: () => Promise<void>;
 }
@@ -53,6 +62,15 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
 
   deleteAllTransactions: async () => {
     await db.delete(transactions);
+    await get().loadTransactions();
+    await get().loadStats();
+  },
+
+  importTransactions: async (rows) => {
+    await db.delete(transactions);
+    for (const row of rows) {
+      await db.insert(transactions).values(row);
+    }
     await get().loadTransactions();
     await get().loadStats();
   },

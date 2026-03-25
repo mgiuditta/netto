@@ -1,7 +1,7 @@
 import { useMemo } from "react";
-import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Dimensions, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
-import { LineChart } from "react-native-gifted-charts";
+import { LineChart, BarChart, PieChart } from "react-native-gifted-charts";
 import { Colors } from "@/constants/colors";
 import { useTransactionStore } from "@/stores/transaction-store";
 import type { Transaction } from "@/db";
@@ -32,10 +32,67 @@ function buildChartData(transactions: Transaction[]) {
   });
 }
 
+const MONTH_NAMES = ["Gen", "Feb", "Mar", "Apr", "Mag", "Giu", "Lug", "Ago", "Set", "Ott", "Nov", "Dic"];
+
+const CATEGORY_COLORS: Record<string, string> = {
+  slot: "#008F9C",
+  scommesse: "#B04A4A",
+  poker: "#C78D3C",
+  gratta_e_vinci: "#6A5ACD",
+};
+
+function buildMonthlyBars(transactions: Transaction[]) {
+  const now = new Date();
+  const months: { key: string; label: string; wins: number; losses: number }[] = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    months.push({ key, label: MONTH_NAMES[d.getMonth()], wins: 0, losses: 0 });
+  }
+
+  for (const tx of transactions) {
+    const d = new Date(tx.createdAt);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    const month = months.find((m) => m.key === key);
+    if (!month) continue;
+    if (tx.type === "win") month.wins += tx.amount;
+    else month.losses += tx.amount;
+  }
+
+  const bars: { value: number; frontColor: string; label?: string; spacing?: number }[] = [];
+  for (const m of months) {
+    bars.push({ value: m.wins / 100, frontColor: Colors.win, label: m.label, spacing: 2 });
+    bars.push({ value: m.losses / 100, frontColor: Colors.loss, spacing: 16 });
+  }
+  return bars;
+}
+
+function buildCategoryPie(transactions: Transaction[]) {
+  const totals: Record<string, number> = {};
+  for (const tx of transactions) {
+    if (tx.type === "loss") {
+      totals[tx.category] = (totals[tx.category] || 0) + tx.amount;
+    }
+  }
+
+  const entries = Object.entries(totals).filter(([, v]) => v > 0);
+  if (entries.length === 0) return [];
+
+  return entries
+    .sort((a, b) => b[1] - a[1])
+    .map(([cat, cents]) => ({
+      value: cents / 100,
+      color: CATEGORY_COLORS[cat] || Colors.textSecondary,
+      text: CATEGORY_LABELS[cat] || cat,
+    }));
+}
+
 const MAX_RECENT = 5;
 
 export default function HomeScreen() {
   const router = useRouter();
+  const isLoaded = useTransactionStore((s) => s.isLoaded);
   const netBalance = useTransactionStore((s) => s.netBalance);
   const monthWins = useTransactionStore((s) => s.monthWins);
   const monthLosses = useTransactionStore((s) => s.monthLosses);
@@ -43,6 +100,8 @@ export default function HomeScreen() {
   const recentTransactions = transactions.slice(0, MAX_RECENT);
 
   const chartData = useMemo(() => buildChartData(transactions), [transactions]);
+  const barData = useMemo(() => buildMonthlyBars(transactions), [transactions]);
+  const pieData = useMemo(() => buildCategoryPie(transactions), [transactions]);
 
   const chartMax = useMemo(() => {
     if (chartData.length === 0) return 100;
@@ -50,11 +109,25 @@ export default function HomeScreen() {
     return Math.max(absMax * 1.2, 10);
   }, [chartData]);
 
+  const barMax = useMemo(() => {
+    if (barData.length === 0) return 100;
+    const max = Math.max(...barData.map((d) => d.value));
+    return Math.max(max * 1.2, 10);
+  }, [barData]);
+
   const balanceColor = netBalance >= 0 ? Colors.win : Colors.loss;
   const balanceSign = netBalance >= 0 ? "+" : "−";
   const lineColor = chartData.length > 0 && chartData[chartData.length - 1].value >= 0
     ? Colors.win
     : Colors.loss;
+
+  if (!isLoaded) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -134,6 +207,74 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {/* Bar chart: Vinto vs Perso ultimi 6 mesi */}
+      {barData.some((d) => d.value > 0) && (
+        <View style={styles.chartCard}>
+          <Text style={styles.chartTitle}>Ultimi 6 mesi</Text>
+          <View style={styles.legendRow}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: Colors.win }]} />
+              <Text style={styles.legendText}>Vinto</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: Colors.loss }]} />
+              <Text style={styles.legendText}>Perso</Text>
+            </View>
+          </View>
+          <BarChart
+            data={barData}
+            width={CHART_WIDTH}
+            height={120}
+            maxValue={barMax}
+            barWidth={12}
+            barBorderRadius={3}
+            noOfSections={3}
+            hideRules
+            hideYAxisText
+            hideAxesAndRules
+            yAxisLabelWidth={0}
+            xAxisLabelTextStyle={{ color: Colors.textSecondary, fontSize: 11 }}
+            disableScroll
+            initialSpacing={8}
+            endSpacing={8}
+          />
+        </View>
+      )}
+
+      {/* Pie chart: Breakdown spese per categoria */}
+      {pieData.length > 0 && (
+        <View style={styles.chartCard}>
+          <Text style={styles.chartTitle}>Spese per categoria</Text>
+          <View style={styles.pieContainer}>
+            <PieChart
+              data={pieData}
+              radius={70}
+              innerRadius={45}
+              donut
+              backgroundColor={Colors.surface}
+              innerCircleColor={Colors.surface}
+              centerLabelComponent={() => (
+                <View style={styles.pieCenter}>
+                  <Text style={styles.pieCenterText}>
+                    €{(pieData.reduce((s, d) => s + d.value, 0)).toFixed(0)}
+                  </Text>
+                  <Text style={styles.pieCenterLabel}>Totale</Text>
+                </View>
+              )}
+            />
+            <View style={styles.pieLegend}>
+              {pieData.map((d) => (
+                <View key={d.text} style={styles.pieLegendRow}>
+                  <View style={[styles.legendDot, { backgroundColor: d.color }]} />
+                  <Text style={styles.pieLegendText}>{d.text}</Text>
+                  <Text style={styles.pieLegendValue}>€{d.value.toFixed(2).replace(".", ",")}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      )}
+
       {/* Ultime transazioni */}
       {recentTransactions.length > 0 && (
         <View style={styles.recentSection}>
@@ -164,6 +305,12 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.background,
+  },
   scroll: {
     flex: 1,
     backgroundColor: Colors.background,
@@ -214,6 +361,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: 14,
     padding: 20,
+    marginBottom: 16,
   },
   cardTitle: {
     color: Colors.text,
@@ -239,8 +387,67 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontVariant: ["tabular-nums"],
   },
+  legendRow: {
+    flexDirection: "row",
+    gap: 16,
+    marginBottom: 8,
+  },
+  legendItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  legendText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  pieContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 20,
+    marginTop: 8,
+  },
+  pieCenter: {
+    alignItems: "center",
+  },
+  pieCenterText: {
+    color: Colors.text,
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  pieCenterLabel: {
+    color: Colors.textSecondary,
+    fontSize: 11,
+  },
+  pieLegend: {
+    flex: 1,
+    gap: 8,
+  },
+  pieLegendRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  pieLegendText: {
+    color: Colors.text,
+    fontSize: 13,
+    fontWeight: "600",
+    flex: 1,
+  },
+  pieLegendValue: {
+    color: Colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "600",
+    fontVariant: ["tabular-nums"],
+  },
   recentSection: {
-    marginTop: 16,
+    marginTop: 0,
   },
   recentTitle: {
     color: Colors.text,

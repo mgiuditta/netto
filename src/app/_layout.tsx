@@ -7,6 +7,7 @@ import { initDatabase } from "@/db";
 import { useTransactionStore } from "@/stores/transaction-store";
 import { useSettingsStore } from "@/stores/settings-store";
 import OnboardingScreen from "@/components/screens/OnboardingScreen";
+import { ToastOverlay } from "@/components/Toast";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -61,21 +62,24 @@ export default function RootLayout() {
   if (!authenticated) return null;
 
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: { backgroundColor: Colors.background },
-        headerTintColor: Colors.text,
-        contentStyle: { backgroundColor: Colors.background },
-      }}
-    >
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="quick-entry"
-        options={{
-          presentation: "modal",
-          title: "Quick Entry",
+    <>
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: Colors.background },
+          headerTintColor: Colors.text,
+          contentStyle: { backgroundColor: Colors.background },
         }}
-      />
-    </Stack>
+      >
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="quick-entry"
+          options={{
+            presentation: "modal",
+            title: "Quick Entry",
+          }}
+        />
+      </Stack>
+      <ToastOverlay />
+    </>
   );
 }

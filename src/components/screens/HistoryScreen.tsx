@@ -1,8 +1,11 @@
-import { SectionList, View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
-import { useMemo } from "react";
+import { SectionList, View, Text, StyleSheet, Alert, TouchableOpacity, ActivityIndicator } from "react-native";
+import { useMemo, useState } from "react";
+import * as Haptics from "expo-haptics";
+import { Host, Menu, Button as SwiftButton } from "@expo/ui/swift-ui";
 import { Colors } from "@/constants/colors";
 import { useTransactionStore } from "@/stores/transaction-store";
-import type { Transaction } from "@/db";
+import { useToast } from "@/components/Toast";
+import type { Transaction, TransactionCategory, TransactionType } from "@/db";
 
 const CATEGORY_LABELS: Record<string, string> = {
   slot: "Slot",
@@ -10,6 +13,20 @@ const CATEGORY_LABELS: Record<string, string> = {
   poker: "Poker",
   gratta_e_vinci: "Gratta e Vinci",
 };
+
+const TYPE_OPTIONS: { key: TransactionType | "all"; label: string }[] = [
+  { key: "all", label: "Tutto" },
+  { key: "win", label: "Guadagni" },
+  { key: "loss", label: "Spese" },
+];
+
+const CATEGORY_OPTIONS: { key: TransactionCategory | "all"; label: string }[] = [
+  { key: "all", label: "Tutte" },
+  { key: "slot", label: "Slot" },
+  { key: "scommesse", label: "Scommesse" },
+  { key: "poker", label: "Poker" },
+  { key: "gratta_e_vinci", label: "Gratta e Vinci" },
+];
 
 function formatDate(ts: number): string {
   return new Date(ts).toLocaleDateString("it-IT", {
@@ -29,12 +46,25 @@ function dateKey(ts: number): string {
 }
 
 export default function HistoryScreen() {
+  const isLoaded = useTransactionStore((s) => s.isLoaded);
   const transactions = useTransactionStore((s) => s.transactions);
   const deleteTransaction = useTransactionStore((s) => s.deleteTransaction);
+  const toast = useToast();
+
+  const [typeFilter, setTypeFilter] = useState<TransactionType | "all">("all");
+  const [categoryFilter, setCategoryFilter] = useState<TransactionCategory | "all">("all");
+
+  const filtered = useMemo(() => {
+    return transactions.filter((tx) => {
+      if (typeFilter !== "all" && tx.type !== typeFilter) return false;
+      if (categoryFilter !== "all" && tx.category !== categoryFilter) return false;
+      return true;
+    });
+  }, [transactions, typeFilter, categoryFilter]);
 
   const sections = useMemo(() => {
     const grouped = new Map<string, { title: string; data: Transaction[] }>();
-    for (const tx of transactions) {
+    for (const tx of filtered) {
       const key = dateKey(tx.createdAt);
       if (!grouped.has(key)) {
         grouped.set(key, { title: formatDate(tx.createdAt), data: [] });
@@ -42,18 +72,33 @@ export default function HistoryScreen() {
       grouped.get(key)!.data.push(tx);
     }
     return Array.from(grouped.values());
-  }, [transactions]);
+  }, [filtered]);
 
   const handleDelete = (tx: Transaction) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     Alert.alert("Elimina transazione", "Sei sicuro di voler eliminare questa transazione?", [
       { text: "Annulla", style: "cancel" },
       {
         text: "Elimina",
         style: "destructive",
-        onPress: () => deleteTransaction(tx.id),
+        onPress: async () => {
+          await deleteTransaction(tx.id);
+          toast.show("Transazione eliminata");
+        },
       },
     ]);
   };
+
+  const typeLabel = TYPE_OPTIONS.find((o) => o.key === typeFilter)!.label;
+  const categoryLabel = CATEGORY_OPTIONS.find((o) => o.key === categoryFilter)!.label;
+
+  if (!isLoaded) {
+    return (
+      <View style={styles.empty}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
 
   if (transactions.length === 0) {
     return (
@@ -66,12 +111,53 @@ export default function HistoryScreen() {
     );
   }
 
+  const hasActiveFilter = typeFilter !== "all" || categoryFilter !== "all";
+
   return (
     <SectionList
       sections={sections}
       keyExtractor={(item) => String(item.id)}
       style={styles.list}
       contentInsetAdjustmentBehavior="automatic"
+      ListHeaderComponent={
+        <View style={styles.filtersContainer}>
+          <Host style={styles.menuHost}>
+            <Menu label={typeLabel} systemImage="arrow.up.arrow.down">
+              {TYPE_OPTIONS.map((o) => (
+                <SwiftButton
+                  key={o.key}
+                  label={o.label}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setTypeFilter(o.key);
+                  }}
+                />
+              ))}
+            </Menu>
+          </Host>
+          <Host style={styles.menuHost}>
+            <Menu label={categoryLabel} systemImage="square.grid.2x2">
+              {CATEGORY_OPTIONS.map((o) => (
+                <SwiftButton
+                  key={o.key}
+                  label={o.label}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setCategoryFilter(o.key);
+                  }}
+                />
+              ))}
+            </Menu>
+          </Host>
+        </View>
+      }
+      ListEmptyComponent={
+        hasActiveFilter ? (
+          <View style={styles.emptyFilter}>
+            <Text style={styles.emptyText}>Nessun risultato per i filtri selezionati</Text>
+          </View>
+        ) : null
+      }
       renderSectionHeader={({ section }) => (
         <Text style={styles.sectionHeader}>{section.title}</Text>
       )}
@@ -101,6 +187,24 @@ const styles = StyleSheet.create({
   list: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  filtersContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 8,
+    gap: 12,
+  },
+  menuHost: {
+    flex: 1,
+    height: 36,
+    minWidth: 160,
+  },
+  emptyFilter: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+    paddingHorizontal: 40,
   },
   sectionHeader: {
     color: Colors.textSecondary,
